@@ -35,7 +35,10 @@
 // }).listen(port);
 var {Subject} = require('rxjs')
 var express = require('express')
+const cors = require('cors') 
 var app = express()
+
+app.use(cors()); 
 
 const subject = new Subject();
 
