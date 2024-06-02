@@ -1,44 +1,23 @@
-// const http = require('http');
-// const url = require('url');
-
-// const port = 8000;
-
-// http.createServer(async (req, res) => {
-
-//   // get URI path
-//   const uri = url.parse(req.url).pathname;
-
-//   // return response
-//   switch (uri) {
-//     case "/random":
-//       sseStart(res);
-//       sseRandom(res);
-//       break;
-//   }
-
-//   // SSE head
-//  function sseStart(res) {
-//     res.writeHead(200, {
-//       "Content-Type": "text/event-stream",
-//       "Cache-Control": "no-cache",
-//       "Connection": "keep-alive"
-//     });
-//   }
-
-
-//   // SSE random number
-// function sseRandom(res) {
-//     res.write("data: " + (Math.floor(Math.random() * 1000) + 1) + "\n\n");
-//     setTimeout(() => sseRandom(res), Math.random() * 3000);
-//   }
-
-// }).listen(port);
 var {Subject} = require('rxjs')
 var express = require('express')
+const webpush = require('web-push');
 const cors = require('cors') 
 var app = express()
+const apiKeys = {
+  publicKey: "BIC8gnnjHsk3Sd1HZiOSbu1TFB5ZzhViwoA7kzYmAPW52C7l_y2H9yLPlwCUrpqzWBrJqF4QGZ737kKhgLrmU08",
+  privateKey: "tmCaQ4aSPyymQ7psqGnBNamgR7SGyhwpm_dLx_Bk7gM"
+}
+
+webpush.setVapidDetails(
+  'mailto:imtiazhuda@gmail.com',
+  apiKeys.publicKey,
+  apiKeys.privateKey
+)
+
+const subDatabse = [];
 
 app.use(cors()); 
+app.use(express.json());
 
 const subject = new Subject();
 
@@ -67,6 +46,29 @@ app.get('/random', function (req, res) {
             //res.write("data: " + v + "\n\n");
         },
       });
+})
+
+app.get("/send-notification/:data", (req, res) => {
+  var msg = {
+    title: "test title",
+    body: req.params.data,
+    tag: "test tag"
+  }
+  subDatabse.forEach((pushSubscription)=>{
+    webpush.sendNotification(pushSubscription, msg);
+  })
+  
+  res.json({ "statue": "Success", "message": "Message sent to push service" });
+})
+
+app.post("/save-subscription", (req, res) => {
+  subDatabse.push(req.body);
+  res.json({ status: "Success", message: "Subscription saved!" })
+})
+
+app.get('/clearsubs', function (req, res) {
+  subDatabse = [];
+  res.send('clearsubs');
 })
 
   // SSE head
