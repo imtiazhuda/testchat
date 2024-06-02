@@ -14,7 +14,7 @@ webpush.setVapidDetails(
   apiKeys.privateKey
 )
 
-const subDatabse = [];
+var subDatabse = [];
 
 app.use(cors()); 
 app.use(express.json());
@@ -54,9 +54,32 @@ app.get("/send-notification/:data", (req, res) => {
     body: req.params.data,
     tag: "test tag"
   }
-  subDatabse.forEach((pushSubscription)=>{
-    webpush.sendNotification(pushSubscription, msg);
-  })
+  let payload = JSON.stringify(msg);
+  let callback = (a,b)=>{
+    console.log(a);
+    console.log(b);
+    if(!b){
+      subDatabse = [];
+    }
+  }
+  
+    subDatabse.forEach((pushSubscription)=>{
+      
+        webpush.sendNotification(pushSubscription, payload).then(
+          function (data) {
+              return callback(null, data);
+          },
+          function (err) {
+              return callback(err, null);
+          }
+      )
+      .catch(function (ex) {
+          return callback(new Error(ex), null);
+      })
+      
+    })
+  
+  
   
   res.json({ "statue": "Success", "message": "Message sent to push service" });
 })
@@ -68,7 +91,7 @@ app.post("/save-subscription", (req, res) => {
 
 app.get('/clearsubs', function (req, res) {
   subDatabse = [];
-  res.send('clearsubs');
+  res.json({ status: "Success", message: "Subscription cleared!" })
 })
 
   // SSE head
