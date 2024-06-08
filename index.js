@@ -3,6 +3,9 @@ var express = require('express')
 const webpush = require('web-push');
 const cors = require('cors') 
 var app = express()
+var { WebSocketServer } = require('ws');
+const wss = new WebSocketServer({ port: 8080 });
+
 const apiKeys = {
   publicKey: "BIC8gnnjHsk3Sd1HZiOSbu1TFB5ZzhViwoA7kzYmAPW52C7l_y2H9yLPlwCUrpqzWBrJqF4QGZ737kKhgLrmU08",
   privateKey: "tmCaQ4aSPyymQ7psqGnBNamgR7SGyhwpm_dLx_Bk7gM"
@@ -105,9 +108,23 @@ app.get('/clearsubs', function (req, res) {
 
     // SSE random number
 function sseRandom(res, data) {
-    console.log("yes", data);
+    //console.log("yes", data);
     res.write("data: " + data + "\n\n");
     
   }
+
+wss.on('connection', function connection(ws, req) {
+  //console.log(req.socket);
+  ws.on('message', function message(data) {
+    console.log('received: %s', data);
+    console.log( data);
+    let msg = data.toString();
+    wss.clients.forEach(client => {
+      client.send(msg);
+    });
+  });
+
+  ws.send('something');
+});  
 
 app.listen(3000)
