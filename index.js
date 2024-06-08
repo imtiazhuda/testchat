@@ -4,7 +4,9 @@ const webpush = require('web-push');
 const cors = require('cors') 
 var app = express()
 var { WebSocketServer } = require('ws');
-const wss = new WebSocketServer({ port: 8080 });
+const PORT = process.env.PORT || 3000;
+const wss = new WebSocketServer({ port: PORT });
+console.log('listening for connections on %s...', PORT);
 
 const apiKeys = {
   publicKey: "BIC8gnnjHsk3Sd1HZiOSbu1TFB5ZzhViwoA7kzYmAPW52C7l_y2H9yLPlwCUrpqzWBrJqF4QGZ737kKhgLrmU08",
