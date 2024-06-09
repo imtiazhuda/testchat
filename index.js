@@ -5,7 +5,7 @@ const cors = require('cors')
 var app = express()
 var { WebSocketServer } = require('ws');
 const PORT = process.env.PORT || 3000;
-const wss = new WebSocketServer({ port: PORT });
+const wss = new WebSocketServer({ noServer: true });
 console.log('listening for connections on %s...', PORT);
 
 const apiKeys = {
@@ -129,4 +129,11 @@ wss.on('connection', function connection(ws, req) {
   ws.send('something');
 });  
 
-app.listen(4000)
+const server = app.listen(PORT);
+
+//this is required to handel websocket in the same port as express is running
+server.on('upgrade', (request, socket, head) => {
+  wss.handleUpgrade(request, socket, head, socket => {
+    wss.emit('connection', socket, request);
+  });
+});
